@@ -1,6 +1,6 @@
 [package]
 name = "tcrank"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Sadaie Matsudaira <sadaie@matsuri-hi.me>"]
 edition = "2018"
 description = "Gets THE@TER CHALLENGE!! ranking using the Princess API <https://api.matsurihi.me/docs/>"
@@ -9,7 +9,6 @@ repository = "https://github.com/sadaie/tcrank"
 keywords = ["CLI"]
 categories = ["command-line-utilities"]
 license = "MIT"
-publish = false
 
 [dependencies]
 reqwest = "0.9.5"
