@@ -16,7 +16,7 @@ $ cargo install -f tcrank
 ### ソースコードからビルド
 
 ```
-$ git clone https://github.com/sadaie/tcrank
+$ git clone https://github.com/sadaie/tcrank.git
 $ cd tcrank
 $ cargo build --release
 $ ls target/release/
