@@ -1,20 +1,20 @@
 //! # `tcrank`
 //! `tcrank` is a tiny utility tool for THE IDOLM@STER MILLION LIVE!! THEATER DAYS and its special election event, THE@TER CHALLENGE!!.  
 //! `tcrank` uses the [Princess](https://api.matsurihi.me/docs/).
-//! 
+//!
 //! ## Install
-//! 
+//!
 //! **`tcrank` is written in Rust. Thus you should install the latest Rust ecosystem in advance.**  
 //! **refs. [rustup](https://rustup.rs/)**
-//! 
+//!
 //! ### With `cargo install`
-//! 
+//!
 //! ```
 //! $ cargo install -f tcrank
 //! ```
-//! 
+//!
 //! ### Build from source code
-//! 
+//!
 //! ```
 //! $ git clone https://github.com/sadaie/tcrank
 //! $ cd tcrank
@@ -22,24 +22,24 @@
 //! $ ls target/release/
 //! build       deps        examples    incremental native      tcrank      tcrank.d
 //! ```
-//! 
+//!
 //! ## Usage
-//! 
+//!
 //! ### Listing the idols and/or the roles.
-//! 
+//!
 //! ```
 //! # lists both of the idols and roles.
 //! $ tcrank list
-//! 
+//!
 //! # lists the idols.
 //! $ tcrank list -i
-//! 
+//!
 //! # lists the roles.
 //! $ tcrank list -r
 //! ```
-//! 
+//!
 //! ### Showing the specified idol's rank(s).
-//! 
+//!
 //! ```
 //! # shows the idol's rank by ID.
 //! $ tcrank show -i 21
@@ -47,25 +47,25 @@
 //! 徳川まつり  少女            80     9
 //! 徳川まつり  魔法使い        10857  1
 //! 徳川まつり  ファイナルデイ  36     7
-//! 
+//!
 //! # shows the idol's rank by ID and role's ID.
 //! $ tcrank show -i 21 -r 23
 //! Name        Role            Score  Rank
 //! 徳川まつり  魔法使い        10857  1
-//! 
+//!
 //! # and you can use both of the idol's name and role's name.
 //! $ tcrank show -i "徳川まつり" -r "魔法使い"
 //! Name        Role            Score  Rank
 //! 徳川まつり  魔法使い        10857  1
 //! ```
-//! 
+//!
 //! #### Additional options
-//! 
+//!
 //! - `--json` option prints the result as `JSON` style string.
 //! - `--json-pretty` option prints the result as pretty `JSON` style string.
-//! 
+//!
 //! ## License
-//! 
+//!
 //! MIT lincense.  
 
 mod models;
@@ -94,19 +94,27 @@ lazy_static::lazy_static! {
     };
 }
 
-fn list_idols() {
+fn list_idols(should_insert_newline: bool) {
     let mut table = Table::from_csv_string(include_str!("../data/idols.csv")).expect("must exist");
     table.set_titles(row!["ID", "Full Name", "Personal Name"]);
     table.set_format(*format::consts::FORMAT_CLEAN);
-    println!("\nIdols:");
+    if should_insert_newline {
+        println!("\nIdols:");
+    } else {
+        println!("Idols:");
+    }
     table.printstd();
 }
 
-fn list_roles() {
+fn list_roles(should_insert_newline: bool) {
     let mut table = Table::from_csv_string(include_str!("../data/roles.csv")).expect("must exist");
     table.set_titles(row!["ID", "Full Name"]);
     table.set_format(*format::consts::FORMAT_CLEAN);
-    println!("\nRoles:");
+    if should_insert_newline {
+        println!("\nRoles:");
+    } else {
+        println!("Roles:");
+    }
     table.printstd();
 }
 
@@ -115,16 +123,16 @@ fn get_data() -> Result<Vec<models::Ranking>, reqwest::Error> {
         .map(|mut r| r.json::<Vec<models::Ranking>>().expect("must be parsed."))
 }
 
-fn get_idol_rank(idol_id: u8, role_id: Option<u8>) -> Option<Vec<models::Arrangement>> {
-    let data: Vec<models::Arrangement> = if let Some(role_id) = role_id {
+fn get_idol_rank(idol_ids: &[u8], role_ids: Option<&[u8]>) -> Option<Vec<models::Arrangement>> {
+    let data: Vec<models::Arrangement> = if let Some(role_ids) = role_ids {
         get_data()
             .ok()?
             .iter()
-            .filter(|r| r.id() == role_id)
+            .filter(|r| role_ids.contains(&r.id()))
             .map(|r| {
                 r.data()
                     .iter()
-                    .filter(|p| p.idol().id() == idol_id)
+                    .filter(|p| idol_ids.contains(&p.idol().id()))
                     .map(|p| {
                         models::Arrangement::new(p.idol().name(), r.name(), p.score(), p.rank())
                     })
@@ -139,7 +147,7 @@ fn get_idol_rank(idol_id: u8, role_id: Option<u8>) -> Option<Vec<models::Arrange
             .map(|r| {
                 r.data()
                     .iter()
-                    .filter(|p| p.idol().id() == idol_id)
+                    .filter(|p| idol_ids.contains(&p.idol().id()))
                     .map(|p| {
                         models::Arrangement::new(p.idol().name(), r.name(), p.score(), p.rank())
                     })
@@ -222,20 +230,22 @@ fn main() {
             clap::SubCommand::with_name("show")
             .about("Shows specified idol rank")
             .arg(
-                clap::Arg::with_name("idol")
+                clap::Arg::with_name("idols")
                 .help("Specifies the idol to show. See `tcrank list` to make sure the idol's ID or name.")
                 .required(true)
                 .short("i")
                 .long("idols")
                 .takes_value(true)
+                .multiple(true)
                 .value_name("IDOL_ID or IDOL_NAME")
             )
             .arg(
-                clap::Arg::with_name("role")
+                clap::Arg::with_name("roles")
                 .help("Specifies the role to show. See `tcrank list` to make sure the role's ID or name.")
                 .short("r")
                 .long("roles")
                 .takes_value(true)
+                .multiple(true)
                 .value_name("ROLE_ID or ROLE_NAME")
             )
             .arg(
@@ -255,28 +265,36 @@ fn main() {
     if let Some(matches) = matches.subcommand_matches("list") {
         match (matches.is_present("idols"), matches.is_present("roles")) {
             (true, true) | (false, false) => {
-                list_idols();
-                list_roles();
+                list_idols(false);
+                list_roles(true);
             }
-            (true, false) => list_idols(),
-            (false, true) => list_roles(),
+            (true, false) => list_idols(false),
+            (false, true) => list_roles(false),
         }
     } else if let Some(matches) = matches.subcommand_matches("show") {
-        let idol_id = matches
-            .value_of("idol")
-            .map(|id_or_name| {
-                if let Some(id) = get_idol_id(id_or_name) {
-                    id
-                } else {
-                    eprintln!("The given idol ID or idol name is invalid.");
-                    std::process::exit(1);
-                }
+        let idol_ids = matches
+            .values_of("idols")
+            .map(|id_or_names| {
+                id_or_names.map(|id_or_name| {
+                    if let Some(id) = get_idol_id(id_or_name) {
+                        id
+                    } else {
+                        eprintln!("The given idol ID or idol name is invalid.");
+                        std::process::exit(1);
+                    }
+                })
+                .collect::<Vec<u8>>()
             })
             .expect("must be set.");
 
-        let role_id = matches.value_of("role").and_then(get_role_id);
+        let role_ids = matches.values_of("roles").map(|values| {
+            values.filter_map(|id_or_name| {
+                get_role_id(id_or_name)
+            })
+            .collect::<Vec<u8>>()
+        });
 
-        if let Some(data) = get_idol_rank(idol_id, role_id) {
+        if let Some(data) = get_idol_rank(&idol_ids, role_ids.as_ref().map(AsRef::as_ref)) {
             if matches.is_present("json_pretty") || matches.is_present("json") {
                 let json = if matches.is_present("json_pretty") {
                     serde_json::to_string_pretty(&data)
