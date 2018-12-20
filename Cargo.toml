@@ -1,9 +1,10 @@
 [package]
 name = "tcrank"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["Sadaie Matsudaira <sadaie@matsuri-hi.me>"]
 edition = "2018"
-description = "Gets THE@TER CHALLENGE!! ranking using the Princess API <https://api.matsurihi.me/docs/>"
+description = "Gets THE@TER CHALLENGE!! ranking using the Princess <https://api.matsurihi.me/docs/>"
+readme = "README.md"
 homepage = "https://github.com/sadaie/tcrank"
 repository = "https://github.com/sadaie/tcrank"
 keywords = ["CLI"]
