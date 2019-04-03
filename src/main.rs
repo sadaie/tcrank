@@ -66,7 +66,7 @@
 //!
 //! ## License
 //!
-//! MIT lincense.  
+//! MIT license.  
 
 mod models;
 
@@ -179,7 +179,7 @@ fn get_idol_id(id_or_name: &str) -> Option<u8> {
             .map(|(k, _)| *k)
             .collect::<Vec<u8>>()
             .first()
-            .map(|v| *v),
+            .cloned(),
     }
 }
 
@@ -198,7 +198,7 @@ fn get_role_id(id_or_name: &str) -> Option<u8> {
             .map(|(k, _)| *k)
             .collect::<Vec<u8>>()
             .first()
-            .map(|v| *v),
+            .cloned(),
     }
 }
 
@@ -275,23 +275,23 @@ fn main() {
         let idol_ids = matches
             .values_of("idols")
             .map(|id_or_names| {
-                id_or_names.map(|id_or_name| {
-                    if let Some(id) = get_idol_id(id_or_name) {
-                        id
-                    } else {
-                        eprintln!("The given idol ID or idol name is invalid.");
-                        std::process::exit(1);
-                    }
-                })
-                .collect::<Vec<u8>>()
+                id_or_names
+                    .map(|id_or_name| {
+                        if let Some(id) = get_idol_id(id_or_name) {
+                            id
+                        } else {
+                            eprintln!("The given idol ID or idol name is invalid.");
+                            std::process::exit(1);
+                        }
+                    })
+                    .collect::<Vec<u8>>()
             })
             .expect("must be set.");
 
         let role_ids = matches.values_of("roles").map(|values| {
-            values.filter_map(|id_or_name| {
-                get_role_id(id_or_name)
-            })
-            .collect::<Vec<u8>>()
+            values
+                .filter_map(|id_or_name| get_role_id(id_or_name))
+                .collect::<Vec<u8>>()
         });
 
         if let Some(data) = get_idol_rank(&idol_ids, role_ids.as_ref().map(AsRef::as_ref)) {
