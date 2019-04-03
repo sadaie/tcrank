@@ -66,4 +66,4 @@ Name        Role            Score  Rank
 
 ## License
 
-MIT lincense.  
+MIT license.  

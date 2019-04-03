@@ -74,8 +74,8 @@ impl Arrangement {
         Arrangement {
             idol_name: idol_name.to_owned(),
             role_name: role_name.to_owned(),
-            score: score,
-            rank: rank,
+            score,
+            rank,
         }
     }
 }

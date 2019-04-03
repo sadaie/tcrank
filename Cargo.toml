@@ -1,6 +1,6 @@
 [package]
 name = "tcrank"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Sadaie Matsudaira <sadaie@matsuri-hi.me>"]
 edition = "2018"
 description = "Gets THE@TER CHALLENGE!! ranking using the Princess <https://api.matsurihi.me/docs/>"
